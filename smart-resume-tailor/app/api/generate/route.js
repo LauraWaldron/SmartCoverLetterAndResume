@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { PDFParse } from "pdf-parse";
+// import { PDFParse } from "pdf-parse";
 import OpenAI from "openai";
 
-const pdf = PDFParse;
+// const pdf = PDFParse;
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -47,6 +47,13 @@ IMPORTANT:
 
 async function extractPdfText(fileBuffer) {
   try {
+    const pdf = (await import("pdf-parse")).default; //troubleshoot how/why it is not finding the pdf here :)
+    //new error handling for if the text is not extracted
+    //neither one of these error handlers work because the resumeText and data are not defined.
+    //console.log("Extracted text length:", resumeText.length);
+    // if (!data.text || data.text.trim().length === 0) {
+    //   throw new Error("PDF contains no extractable text (possibly scanned image)");
+    // }
     const data = await pdf.default(fileBuffer);
     return data.text;
   } catch (error) {
