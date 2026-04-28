@@ -46,18 +46,18 @@ IMPORTANT:
 - Make all content specific and relevant - no generic statements`;
 
 async function extractPdfText(fileBuffer) {
+  let parser;
   try {
-    const pdf = (await import("pdf-parse")).default; //troubleshoot how/why it is not finding the pdf here :)
-    //new error handling for if the text is not extracted
-    //neither one of these error handlers work because the resumeText and data are not defined.
-    //console.log("Extracted text length:", resumeText.length);
-    // if (!data.text || data.text.trim().length === 0) {
-    //   throw new Error("PDF contains no extractable text (possibly scanned image)");
-    // }
-    const data = await pdf.default(fileBuffer);
+    parser = new pdf({ data: fileBuffer });
+    const data = await parser.getText();
     return data.text;
   } catch (error) {
-    throw new Error(`Failed to parse PDF: ${error.message}`);
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to parse PDF: ${message}`);
+  } finally {
+    if (parser) {
+      await parser.destroy();
+    }
   }
 }
 
