@@ -1,6 +1,44 @@
+// Adding a new import here to handle the pdf download
+//import * as pdfjsLib from "pdfjs-dist";
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+//really wants me to change the pdf parse back to its normal function
 import { NextResponse } from "next/server";
 import { PDFParse } from "pdf-parse";
 import OpenAI from "openai";
+
+// Configure PDF.js worker to use CDN
+// pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+//pdfjsLib.GlobalWorkerOptions.disableWorker = true;
+// Configure PDF.js worker for the legacy build - use CDN
+// if (typeof pdfjsLib.GlobalWorkerOptions !== 'undefined') {
+//   pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// }
+// Configure PDF.js worker for Node.js environment
+// Disable worker for legacy build in Node.js
+if (typeof pdfjsLib === 'object' && pdfjsLib.GlobalWorkerOptions) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+}
+// import { fileURLToPath } from 'url';
+// import { dirname, join } from 'path';
+
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = dirname(__filename);
+
+// pdfjsLib.GlobalWorkerOptions.workerSrc = join(__dirname, '../../node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs');
+// // Adding a new import here to handle the pdf download
+// // import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+// import * as pdfjsLib from "pdfjs-dist";
+// //really wants me to change the pdf parse back to its normal function
+// import { NextResponse } from "next/server";
+// import { PDFParse } from "pdf-parse";
+// import OpenAI from "openai";
+
+// // adding another way to force the worker to be disabled
+// pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js";
+// // import * as pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs";
+// // pdfjsLib.GlobalWorkerOptions.workerSrc = require.resolve("pdfjs-dist/build/pdf.worker.min.js");//
+// // pdfjsLib.disableWorker = true;
+// // console.log("Worker disabled:", pdfjsLib.disableWorker);
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -44,9 +82,11 @@ IMPORTANT:
 - Make all content specific and relevant - no generic statements`;
 
 async function extractPdfText(fileBuffer) {
+  // console.log("Inside function - worker disabled:", pdfjsLib.disableWorker);
   let parser;
   try {
-    parser = new PDFParse({ data: fileBuffer });
+    // disableWorker: true was a trial fix that did not work
+    parser = new PDFParse({ data: fileBuffer});
     const data = await parser.getText();
     return data.text;
   } catch (error) {
